@@ -11,14 +11,26 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model', type=int, default=101)
 parser.add_argument('--scale_factor', type=float, default=1.0)
 parser.add_argument('--notxt', action='store_true')
-parser.add_argument('--image_dir', type=str, default='./images')
+parser.add_argument('--image_dir', type=str, default='./DanceImages')
 parser.add_argument('--output_dir', type=str, default='./output')
 args = parser.parse_args()
 
 
+def getHandInfo (f, pose_scores, scores, coords):
+
+    print("Results for image: %s" % f)
+    for index in range(len(pose_scores)):
+        if pose_scores[index] == 0.:
+            break
+        # pose_scores_lhand = [pose_scores[index][i] for i in posenet.LEFT_HAND]
+        # scores_lhand = [scores[index][i] for i in posenet.LEFT_HAND]
+        # coords_lhand = [coords[i] for i in posenet.LEFT_HAND]
+        print(pose_scores)
+
+
 def main():
     model = posenet.load_model(args.model)
-    model = model.cuda()
+    # model = model.cuda()
     output_stride = model.output_stride
 
     if args.output_dir:
@@ -34,7 +46,8 @@ def main():
             f, scale_factor=args.scale_factor, output_stride=output_stride)
 
         with torch.no_grad():
-            input_image = torch.Tensor(input_image).cuda()
+            input_image = torch.Tensor(input_image)
+                #.cuda()
 
             heatmaps_result, offsets_result, displacement_fwd_result, displacement_bwd_result = model(input_image)
 
@@ -49,24 +62,26 @@ def main():
 
         keypoint_coords *= output_scale
 
-        if args.output_dir:
-            draw_image = posenet.draw_skel_and_kp(
-                draw_image, pose_scores, keypoint_scores, keypoint_coords,
-                min_pose_score=0.25, min_part_score=0.25)
+        getHandInfo(f, pose_scores, keypoint_scores, keypoint_coords)
+    #     if args.output_dir:
+    #         draw_image = posenet.draw_skel_and_kp(
+    #             draw_image, pose_scores, keypoint_scores, keypoint_coords,
+    #             min_pose_score=0.25, min_part_score=0.25)
+    #
+    #         cv2.imwrite(os.path.join(args.output_dir, os.path.relpath(f, args.image_dir)), draw_image)
+    #
+    #     if not args.notxt:
+    #         print()
+    #         print("Results for image: %s" % f)
+    #         for pi in range(len(pose_scores)):
+    #             if pose_scores[pi] == 0.:
+    #                 break
+    #             print('Pose #%d, score = %f' % (pi, pose_scores[pi]))
+    #             for ki, (s, c) in enumerate(zip(keypoint_scores[pi, :], keypoint_coords[pi, :, :])):
+    #                 print('Keypoint %s, score = %f, coord = %s' % (posenet.PART_NAMES[ki], s, c))
+    #
+    # print('Average FPS:', len(filenames) / (time.time() - start))
 
-            cv2.imwrite(os.path.join(args.output_dir, os.path.relpath(f, args.image_dir)), draw_image)
-
-        if not args.notxt:
-            print()
-            print("Results for image: %s" % f)
-            for pi in range(len(pose_scores)):
-                if pose_scores[pi] == 0.:
-                    break
-                print('Pose #%d, score = %f' % (pi, pose_scores[pi]))
-                for ki, (s, c) in enumerate(zip(keypoint_scores[pi, :], keypoint_coords[pi, :, :])):
-                    print('Keypoint %s, score = %f, coord = %s' % (posenet.PART_NAMES[ki], s, c))
-
-    print('Average FPS:', len(filenames) / (time.time() - start))
 
 
 if __name__ == "__main__":

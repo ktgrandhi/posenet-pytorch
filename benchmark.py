@@ -8,7 +8,7 @@ import posenet
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', type=int, default=101)
-parser.add_argument('--image_dir', type=str, default='./images')
+parser.add_argument('--image_dir', type=str, default='./DanceImages')
 parser.add_argument('--num_images', type=int, default=1000)
 args = parser.parse_args()
 
@@ -17,7 +17,7 @@ def main():
 
     with torch.no_grad():
         model = posenet.load_model(args.model)
-        model = model.cuda()
+        # model = model.cuda()
         output_stride = model.output_stride
         num_images = args.num_images
 
@@ -30,7 +30,8 @@ def main():
 
         start = time.time()
         for i in range(num_images):
-            input_image = torch.Tensor(images[filenames[i % len(filenames)]]).cuda()
+            input_image = torch.Tensor(images[filenames[i % len(filenames)]])
+                #.cuda()
 
             results = model(input_image)
             heatmaps, offsets, displacement_fwd, displacement_bwd = results

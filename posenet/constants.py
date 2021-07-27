@@ -61,3 +61,7 @@ PART_CHANNELS = [
   'right_lower_arm_front',
   'left_hand'
 ]
+
+#New variables for hands
+LEFT_HAND = [5, 7, 9]
+RIGHT_HAND = [6, 8, 10]
